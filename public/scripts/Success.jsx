@@ -5,6 +5,10 @@ render : function(){
         return (
             <div>
                 Your registration successful.
+
+                <input type="text" value="Users List" className="btn btn-default"
+                    onClick={this.props.usersList}/>
+
             </div>
         )
     }

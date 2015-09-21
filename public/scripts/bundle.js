@@ -19877,14 +19877,21 @@ render : function(){
     "Answer : ", this.props.formFields.answer, 
     React.createElement("br", null), 
     React.createElement("input", {type: "Previous", value: "Previous", className: "btn btn-default", onClick: this.props.previousStep}), " ", 
-    React.createElement("input", {type: "text", value: "Confirm", className: "btn btn-default", onClick: this.nextStep})
+    React.createElement("input", {type: "text", value: "Confirm", className: "btn btn-default", onClick: this.invokeUsersSubmit})
     )
     )
     },
-    nextStep : function(e){
-        e.preventDefault()
-        this.props.nextStep();
-    }
+
+    invokeUsersSubmit : function(e){
+            e.preventDefault()
+            this.setState({
+                formFields : this.props.formFields
+            })
+
+
+            this.props.onUserSubmit({formFields: this.props.formFields});
+        }
+
 })
 
 module.exports = Confirmation
@@ -19898,6 +19905,7 @@ var PersonalDetails = require('./PersonalDetails.jsx')
 var SecurityQuestions = require('./SecurityQuestions.jsx')
 var Confirmation = require('./Confirmation.jsx')
 var Success = require('./Success.jsx')
+var UsersList = require('./UsersList.jsx')
 var assign = require('object-assign')
 
 var formFields = {
@@ -19914,16 +19922,21 @@ var formFields = {
 var MainRegistration = React.createClass({displayName: "MainRegistration",
     getInitialState: function() {
         return {
-            step: 1
+            step: 1,
+            userData : []
         }
     },
     showStep: function(){
       switch(this.state.step){
+        case 6:
+         return React.createElement(UsersList, {userData: this.state.userData, 
+                            invokeUserRegistration: this.invokeUserRegistration})
         case 1:
           return React.createElement(Registration, {formFields: formFields, 
                                nextStep: this.nextStep, 
                                previousStep: this.previousStep, 
-                               saveValues: this.saveValues})
+                               saveValues: this.saveValues, 
+                               invokeUserList: this.invokeUserList})
 
         case 2:
           return React.createElement(PersonalDetails, {formFields: formFields, 
@@ -19938,10 +19951,11 @@ var MainRegistration = React.createClass({displayName: "MainRegistration",
         case 4:
           return React.createElement(Confirmation, {formFields: formFields, 
                                     nextStep: this.nextStep, 
-                                    previousStep: this.previousStep}
+                                    previousStep: this.previousStep, 
+                                    onUserSubmit: this.handleUsersSubmit}
                                     )
          case 5:
-            return React.createElement(Success, null)
+            return React.createElement(Success, {usersList: this.invokeUserList})
       }
     },
     saveValues : function(form_Fields){
@@ -19959,9 +19973,42 @@ var MainRegistration = React.createClass({displayName: "MainRegistration",
                 step : this.state.step - 1
               })
     },
+    handleUsersSubmit: function(user) {
+            var userData = this.state.userData;
+            console.log('userdata :' + userData)
+            var newUserData = userData.concat([user]);
+            this.setState({
+                userData: newUserData
+            });
+            $.ajax({
+                url: 'saveUsers.json',
+                dataType: 'json',
+                type: 'POST',
+                data: user,
+                success: function(userData) {
+                    this.setState({
+                        userData: newUserData
+                    });
+                }.bind(this),
+                error: function(xhr, status, err) {
+                    console.error('saveUsers.json', status, err.toString());
+                }.bind(this)
+            });
+             this.nextStep();
+        },
+        invokeUserList : function(){
+           this.setState({
+             step: 6
+           })
+        },
+        invokeUserRegistration : function(){
+                   this.setState({
+                     step: 1
+                   })
+                },
     render: function() {
         var style = {
-            width: (this.state.step / 4 * 100) + '%'
+            width: (this.state.step / 5 * 100) + '%'
         }
         return (
         React.createElement("div", {className: "registration"}, 
@@ -19979,7 +20026,7 @@ var MainRegistration = React.createClass({displayName: "MainRegistration",
 
 module.exports = MainRegistration;
 
-},{"./Confirmation.jsx":159,"./PersonalDetails.jsx":161,"./Registration.jsx":162,"./SecurityQuestions.jsx":163,"./Success.jsx":164,"object-assign":2,"react":157}],161:[function(require,module,exports){
+},{"./Confirmation.jsx":159,"./PersonalDetails.jsx":161,"./Registration.jsx":162,"./SecurityQuestions.jsx":163,"./Success.jsx":164,"./UsersList.jsx":165,"object-assign":2,"react":157}],161:[function(require,module,exports){
 'use strict';
 
 var React = require('react')
@@ -19999,9 +20046,6 @@ render : function(){
                   React.createElement("input", {type: "text", value: "Save & Continue", className: "btn btn-default", onClick: this.nextStep})
             )
     )
-    },
-    previousStep : function(){
-
     },
     nextStep : function(e){
         e.preventDefault()
@@ -20035,6 +20079,9 @@ var Registration = React.createClass({displayName: "Registration",
   render: function() {
     return (
       React.createElement("div", {className: "form-group"}, 
+        React.createElement("h3", null, " User list "), "  ", React.createElement("input", {type: "text", value: "Users List", className: "btn btn-default", 
+                                               onClick: this.props.invokeUserList}), 
+
         React.createElement("h3", {className: "test"}, " User Registration "), 
           React.createElement("label", {for: "userName"}, "User Name :"), 
           React.createElement("input", {type: "text", className: "form-control", defaultValue: this.props.formFields.userName, ref: "userName"}), 
@@ -20117,12 +20164,69 @@ var Success = React.createClass({displayName: "Success",
 render : function(){
         return (
             React.createElement("div", null, 
-                "Your registration successful."
+                "Your registration successful.", 
+
+                React.createElement("input", {type: "text", value: "Users List", className: "btn btn-default", 
+                    onClick: this.props.usersList})
+
             )
         )
     }
 })
 
 module.exports = Success
+
+},{"react":157}],165:[function(require,module,exports){
+var React = require('react')
+
+var UsersList = React.createClass({displayName: "UsersList",
+    render : function(){
+        return (
+            React.createElement("div", null, 
+            "Please click Signup for user Registration", 
+
+            React.createElement("input", {type: "signup", value: "Signup", className: "btn btn-default", onClick: this.props.invokeUserRegistration}), 
+            React.createElement("br", null), 
+
+            "User list:", 
+            
+            this.state.userData.map(function(listOfValues){
+                        return React.createElement("li", null, listOfValues.formFields.userName, "  ", listOfValues.formFields.password, "  ", listOfValues.formFields.email, "  ", listOfValues.formFields.securityQuestion);
+                      })
+            
+            )
+            )
+    },
+
+    getInitialState : function(){
+        return {
+        userData : []
+        }
+    },
+    componentDidMount: function() {
+                    this.loadUsersFromServer();
+
+                    setInterval(this.loadUsersFromServer, '3000');
+                },
+    loadUsersFromServer: function() {
+    console.log('userData from the load method:'+ this.state.userData)
+            $.ajax({
+                url: 'getUsersList.json',
+                dataType: 'json',
+                cache: false,
+                success: function(userData) {
+                    this.setState({
+                        userData: userData
+                    });
+
+                }.bind(this),
+                error: function(xhr, status, err) {
+                    console.error('getUsersList.json', status, err.toString());
+                }.bind(this)
+            });
+        }
+})
+
+module.exports = UsersList
 
 },{"react":157}]},{},[158]);

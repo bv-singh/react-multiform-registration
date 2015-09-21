@@ -15,14 +15,21 @@ render : function(){
     Answer : {this.props.formFields.answer}
     <br/>
     <input type="Previous" value="Previous" className="btn btn-default" onClick={this.props.previousStep}/>&nbsp;
-    <input type="text" value="Confirm" className="btn btn-default" onClick={this.nextStep}/>
+    <input type="text" value="Confirm" className="btn btn-default" onClick={this.invokeUsersSubmit}/>
     </div>
     )
     },
-    nextStep : function(e){
-        e.preventDefault()
-        this.props.nextStep();
-    }
+
+    invokeUsersSubmit : function(e){
+            e.preventDefault()
+            this.setState({
+                formFields : this.props.formFields
+            })
+
+
+            this.props.onUserSubmit({formFields: this.props.formFields});
+        }
+
 })
 
 module.exports = Confirmation

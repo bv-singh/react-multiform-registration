@@ -18,9 +18,6 @@ render : function(){
             </div>
     )
     },
-    previousStep : function(){
-
-    },
     nextStep : function(e){
         e.preventDefault()
         var address = React.findDOMNode(this.refs.address).value.trim();
