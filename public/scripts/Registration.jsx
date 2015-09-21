@@ -6,6 +6,9 @@ var Registration = React.createClass({
   render: function() {
     return (
       <div className="form-group">
+        <h3> User list </h3>  <input type="text" value="Users List" className="btn btn-default"
+                                               onClick={this.props.invokeUserList}/>
+
         <h3 className="test"> User Registration </h3>
           <label for="userName">User Name :</label>
           <input type="text" className="form-control" defaultValue={this.props.formFields.userName} ref="userName" />
